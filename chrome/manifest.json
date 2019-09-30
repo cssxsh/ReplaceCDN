@@ -1,15 +1,54 @@
 {
-  "name": "ReplaceCDN",
-  "description": "A Chrome App For Replace CDNs",
-  "version": "0.0.1",
-  "manifest_version": 2,
-  "app": {
+    // 插件名称
+    "name": "ReplaceCDN",
+    // 插件描述
+    "description": "A Chrome App For Replace CDNs",
+    // 插件版本
+    "version": "0.1.0",
+    // 清单文件版本
+    "manifest_version": 2,
+    // 图标
+    "icons": { 
+        "16": "images/app-16.png", 
+        "48": "images/app-128.png",
+        "128": "images/app-128.png" 
+    },
+    // 后台程序
     "background": {
-      "scripts": ["scripts/background.js"]
-    }
-  },
-  "icons": { 
-    "16": "images/app-16.png", 
-    "128": "images/app-128.png" 
-  }
+        "scripts": 
+        [
+            "scripts/background.js"
+        ]
+    },
+    // 浏览器标志
+    "browser_action":
+    {
+        // 图标
+        "default_icon": "images/app-16.png",
+        // 悬停时标题
+        "default_title": "Switch For CDNs",
+        // 页面
+        "default_popup": "html/popup.html"
+    },
+    // 配置页面
+    "optional_permissions": 
+    [
+        // 标签
+        "tabs"
+    ],
+    "options_page": "html/options.html",
+    // "options_ui": { "chrome_style": false, "page": "html/options.html" },
+    // 插件权限
+    "permissions":
+    [
+        // 本地存储
+        "storage",
+        // 网络请求权限
+        "webRequest",
+        "webRequestBlocking", 
+        // 全URL控制权限
+        // TODO 应该改成添加请求式
+        "<all_urls>"
+    ],
+    "homepage_url": "https://github.com/cssxsh/ReplaceCDN"
 }

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!-- 外部引入CSS，需要link -->
+    <link rel="stylesheet" type="text/css" href="../css/standby.css">
+    <!-- 外部引入js，crx安全需要 -->
+    <script type="text/javascript" src="../scripts/popup.js"></script>
+</head>
+<body>
+    <div class="frame crt">
+        <div class="container">
+            <div class="block">
+                <p class="text">Login: dousha</p>
+                <div class="expander"></div>
+                <p class="text">
+                    <span id="clock">00:00:00</span>
+                </p>
+            </div>
+        </div>
+        <div class="container">
+            <div class="block">
+                <p class="text">
+                    屏幕已锁定 <br>
+                    输入密码解锁 <br>
+                    或输入 ^C 以其他身份登录 <br>
+                </p>
+            </div>
+        </div>
+        <div class="container">
+            <div class="block">
+                <p class="text">
+                    Password: <span id="pwd"></span><span class="blinker">_</span>
+                </p>
+            </div>
+        </div>
+        <div class="container">
+            <div class="block">
+                <p class="text">正在运行 3 个任务，系统负载 <span id="load">0.82</span></p>
+            </div>
+        </div>
+        <div class="container expander"></div>
+        <div class="container">
+            <div class="block">
+                <p class="text">fsOS</p>
+                <div class="expander"></div>
+                <p class="text">dousha-mainframe</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
