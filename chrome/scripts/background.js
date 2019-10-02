@@ -8,6 +8,8 @@ var back = {
         });
     },
     start: function () {
+        back.webListener.closeCORS();
+        back.webListener.closeCSP();
         chrome.storage.sync.get("assetFilter", result => {
             if (result == null) return;
 
@@ -24,11 +26,13 @@ var back = {
             
             if (origin.test(url)) {
                 url = url.replace(origin, regs[index].result);
-                console.log(request);
-                break;
+                // request.url = url;
+                // console.log(request);
+                console.log(request.requestId + " redirect " + request.url);
+                
+                return { redirectUrl: url };
             }
         }
-        return { redirectUrl: url };
     },
     webListener: {
         add: function () {
@@ -42,7 +46,7 @@ var back = {
                         // "stylesheet", 
                         "script", 
                         // "image", 
-                        "font", 
+                        // "font", 
                         // "object", 
                         // "xmlhttprequest", 
                         // "ping", 
@@ -51,12 +55,71 @@ var back = {
                         // "other"
                     ]
                 },
-                ["blocking"]
+                [
+                    "blocking",
+                ]
             );
         },
         move: function () {
             chrome.webRequest.onBeforeRequest.removeListener(
                 back.redirect
+            );
+        },
+        closeCORS: function () {
+            chrome.webRequest.onHeadersReceived.addListener(
+                details => {
+                    details.responseHeaders.push({name: "Access-Control-Allow-Origin", value: "*"});
+                    details.responseHeaders.push({name: "Access-Control-Allow-Methods", value: "GET"});
+                    details.responseHeaders.push({name: "Access-Control-Max-Age", value: "0"});
+
+                    return { responseHeaders: details.responseHeaders };
+                }, 
+                {
+                    urls: [
+                        "<all_urls>"
+                    ],
+                    types: [
+                        "script"
+                    ]
+                }, 
+                [
+                    "blocking", 
+                    "responseHeaders"
+                ]
+            );
+        },
+        closeCSP: function () {
+            chrome.webRequest.onHeadersReceived.addListener(
+                details => {
+                    if (details.type == "script") {
+                        details.responseHeaders.push({name: "Access-Control-Allow-Origin", value: "*"});
+                        details.responseHeaders.push({name: "Access-Control-Allow-Methods", value: "GET"});
+                        details.responseHeaders.push({name: "Access-Control-Max-Age", value: "0"});
+
+                        return { responseHeaders: details.responseHeaders };
+                    }
+                    for (let i in details.responseHeaders) {
+                        if ("CONTENT-SECURITY-POLICY" == details.responseHeaders[i].name.toUpperCase()) {
+                            // TODO 这里应该是添加
+                            details.responseHeaders[i].value = "";
+                            
+                            return { responseHeaders: details.responseHeaders };
+                        }
+                    }
+                }, 
+                {
+                    urls: [
+                        "<all_urls>"
+                    ],
+                    types: [
+                        "main_frame", 
+                        "sub_frame"
+                    ]
+                }, 
+                [
+                    "blocking", 
+                    "responseHeaders"
+                ]
             );
         }
     }
