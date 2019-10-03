@@ -1,8 +1,8 @@
 var options = {
     result: null,
-    init: function () {
+    init: event => {
         // 初始化数据
-        chrome.storage.sync.get("assetFilter", result => {
+        chrome.storage.sync.get(["assetFilter"], result => {
             options.result = result;
             document.getElementById("jsonInput").value = JSON.stringify(options.result, null, 4);
         });
@@ -11,7 +11,7 @@ var options = {
     },
     save: event => {
         let theValue = document.getElementById("jsonInput").value;
-    
+        // 输入合法性判断
         if (!theValue) {
             alert("Can't be null!");
             return;
@@ -24,39 +24,41 @@ var options = {
         }
 
         // 更新权限
-        let oldResult = options.assetFilter;
+        let oldResult = options.result.assetFilter;
         let newResult = theValue.assetFilter;
-        let oldOrigins = "";
+        let oldPermissions = { 
+            origins: ""
+        };
         try {
-            oldOrigins = oldResult.origins.concat(oldResult.filter.urls);
-            chrome.permissions.remove({ origins: oldOrigins });
+            oldPermissions.origins = oldResult.origins.concat(oldResult.filter.urls);
+            chrome.permissions.remove(oldPermissions);
         } catch(error) {
-            // 原值不规范
+            // TODO 原值不规范处理
         }
-        let newOrigins = newResult.origins.concat(newResult.filter.urls);
-        chrome.permissions.request(
-            { 
-                origins: newOrigins,
-                permissions: [
-                    "webRequest",
-                    "webRequestBlocking"
-                ]
-            }, 
-            granted => {
-            if (!granted) {
-                alert("Save failed!");
-            } else {
+        let newPermissions = { 
+            origins: newResult.origins.concat(newResult.filter.urls)
+        };
+        chrome.permissions.request(newPermissions, granted => {
+            if (granted) {
                 // 更新设置
-                chrome.storage.sync.set(theValue, function() {
-                    let back = chrome.extension.getBackgroundPage().back;
-                    back.loadFilter();
-                    back.webListener.move();
-                    back.webListener.add();
+                chrome.storage.sync.set(theValue, parameter => {
+                    if (chrome.runtime.lastError) {
+                        alert(chrome.runtime.lastError);
+                    } else {
+                        let back = chrome.extension.getBackgroundPage().back;
+                        back.loadFilter(assetFilter => {
+                            // 更新事件
+                            back.webListener.move();
+                            back.webListener.add();
+                        });
+                    }
                 });
+            } else {
+                alert("Save failed!");
             }
         });
     }
 };
 
 // 初始化
-options.init();
+window.onload = options.init;

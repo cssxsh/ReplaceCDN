@@ -1,37 +1,46 @@
 var back = {
     assetFilter: {},
-    loadFilter: function (func) {
+    loadFilter: func => {
         chrome.storage.sync.get("assetFilter", result => {
-
             back.assetFilter = result.assetFilter;
-            if (func != null) func(back.assetFilter);
+            
+            if (typeof func === "function") {
+                func(back.assetFilter);
+            }
         });
     },
-    start: function () {
-        back.loadFilter(assetFilter => {
-            chrome.permissions.contains(
-            { 
-                origins: assetFilter.origins.concat(assetFilter.filter.urls)
-            }, 
-            result => {
-                if (result) {
-                    back.webListener.add();
-                } else {
-                    alert("Permission denied!");
-                }
+    start: event => {
+        let setWebListener = parameters => {
+            back.loadFilter(assetFilter => {
+                let permissions = { 
+                    origins: assetFilter.origins.concat(assetFilter.filter.urls)
+                };
+                
+                chrome.permissions.contains(permissions, result => {
+                    if (result) {
+                        back.webListener.add();
+                    } else {
+                        alert("Permission denied!");
+                        // TODO 权限不足错误处理
+                        chrome.runtime.openOptionsPage();
+                    }
+                });
             });
-        });
+        }
+
+        init.start(setWebListener);
     },
     closeCORS: details => {
         details.responseHeaders.push({name: "Access-Control-Allow-Origin", value: "*"});
         details.responseHeaders.push({name: "Access-Control-Allow-Methods", value: "GET"});
         details.responseHeaders.push({name: "Access-Control-Max-Age", value: "0"});
+        details.responseHeaders.push({name: "Service-Worker-Allowed", value: "/"});
 
         return { responseHeaders: details.responseHeaders };
     },
     closeCSP: details => {
         for (let i in details.responseHeaders) {
-            if ("CONTENT-SECURITY-POLICY" == details.responseHeaders[i].name.toUpperCase()) {
+            if ("CONTENT-SECURITY-POLICY" === details.responseHeaders[i].name.toUpperCase()) {
                 // TODO 这里应该是添加
                 details.responseHeaders[i].value = "";
                 
@@ -57,9 +66,10 @@ var back = {
         }
     },
     webListener: {
-        add: function () {
+        add: func => {
+            let switchs = back.assetFilter.switchs;
             // closeCSP
-            if (back.assetFilter.switch.closeCSP) chrome.webRequest.onHeadersReceived.addListener(
+            if (switchs.closeCSP) chrome.webRequest.onHeadersReceived.addListener(
                 back.closeCSP, 
                 {
                     urls: back.assetFilter.origins,
@@ -85,7 +95,7 @@ var back = {
                 ]
             );
             // closeCORS
-            if (back.assetFilter.switch.closeCORS) chrome.webRequest.onHeadersReceived.addListener(
+            if (switchs.closeCORS) chrome.webRequest.onHeadersReceived.addListener(
                 back.closeCORS, 
                 back.assetFilter.filter,
                 [
@@ -101,8 +111,11 @@ var back = {
                     "blocking",
                 ]
             );
+            if (typeof func === "function") {
+                func();
+            }
         },
-        move: function () {
+        move: func => {
             chrome.webRequest.onBeforeRequest.removeListener(
                 back.redirect
             );
@@ -113,9 +126,12 @@ var back = {
             if (back.assetFilter.closeCSP) chrome.webRequest.onHeadersReceived.removeListener(
                 back.closeCSP
             );
+            
+            if (typeof func === "function") {
+                func();
+            }
         }
     }
 }
 
-
-back.start();
+window.onload = back.start;
