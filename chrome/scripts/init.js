@@ -30,8 +30,7 @@ var init = {
     },
     defaultSeted: false,
     start: func => {
-        // 设置初始化
-        
+        // 绑定事件
         chrome.runtime.onInstalled.addListener(details => {
             switch (details.reason) {
                 case "install":
@@ -48,6 +47,7 @@ var init = {
                     break;
             }
         });
+        // 设置初始化
         chrome.storage.sync.get("defaultFilter", result => {
             if (result.assetFilter === null) {
                 init.defaultSeted = false;

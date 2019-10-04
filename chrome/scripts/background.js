@@ -10,6 +10,7 @@ var back = {
         });
     },
     start: event => {
+        // 声明方法
         let setWebListener = parameters => {
             back.loadFilter(assetFilter => {
                 let permissions = { 
@@ -27,15 +28,16 @@ var back = {
                 });
             });
         }
-
+        // 传递
         init.start(setWebListener);
     },
     closeCORS: details => {
         details.responseHeaders.push({name: "Access-Control-Allow-Origin", value: "*"});
         details.responseHeaders.push({name: "Access-Control-Allow-Methods", value: "GET"});
         details.responseHeaders.push({name: "Access-Control-Max-Age", value: "0"});
+        // service worker 工作空间
         details.responseHeaders.push({name: "Service-Worker-Allowed", value: "/"});
-
+        // console.log(details);
         return { responseHeaders: details.responseHeaders };
     },
     closeCSP: details => {
@@ -54,12 +56,13 @@ var back = {
     
         for (let index in regs) {
             let origin = new RegExp(regs[index].origin);
+            let types = regs[index].types;
             
             if (origin.test(url)) {
+                if (Array.isArray(types) && !types.includes(request.type)) {
+                    return;
+                }
                 url = url.replace(origin, regs[index].result);
-                // request.url = url;
-                // console.log(request);
-                console.log(request.requestId + " redirect " + request.url);
                 
                 return { redirectUrl: url };
             }
@@ -75,7 +78,7 @@ var back = {
                     urls: back.assetFilter.origins,
                     types: [
                         "main_frame", 
-                        "sub_frame", 
+                        "sub_frame"
                         // "stylesheet", 
                         // "script", 
                         // "image", 

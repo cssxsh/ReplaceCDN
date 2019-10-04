@@ -4,7 +4,7 @@
     // 插件描述
     "description": "A Chrome App For Replace CDNs",
     // 插件版本
-    "version": "0.1.5",
+    "version": "0.1.6",
     // 清单文件版本
     "manifest_version": 2,
     // 图标
@@ -28,7 +28,7 @@
     },
     "options_ui": {
         // 页面
-        "page": "html/options.html",// Required.
+        "page": "html/options.html",
         // 使用chrome风格
         "chrome_style": true,
         // 在新标签打开
@@ -49,10 +49,5 @@
         // 标签
         "<all_urls>"
     ],
-    "file_system_provider_capabilities": {                                    // 允许访问文件系统，只支持Chrome OS
-        "configurable": true,
-        "multiple_mounts": true,
-        "source": "network"
-    },
     "homepage_url": "https://github.com/cssxsh/ReplaceCDN"
 }
